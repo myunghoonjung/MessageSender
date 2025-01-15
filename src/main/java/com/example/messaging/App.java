@@ -1,29 +1,37 @@
 package com.example.messaging;
 
+import com.example.messaging.model.Message;
+import com.example.messaging.repository.MessageRepository;
+import com.example.messaging.sender.AppPushSender;
+import com.example.messaging.sender.EmailSender;
+import com.example.messaging.sender.SmsSender;
+import com.example.messaging.worker.MessageWorker;
+
 /**
  * Hello world!
  *
  */
 public class App 
 {
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+    public static void main(String[] args) throws InterruptedException {
+        // Repository 및 Sender 인스턴스 생성
+        MessageRepository messageRepository = new MessageRepository();
+        SmsSender smsSender = new SmsSender();
+        EmailSender emailSender = new EmailSender();
+        AppPushSender appSender = new AppPushSender();
 
-        MessagingManager manager = new MessagingManager();
+        // Worker 인스턴스 생성
+        MessageWorker messageWorker = new MessageWorker(messageRepository, smsSender, emailSender, appSender);
 
-        // 메시지 전송 요청 테스트
-        System.out.println("[Client] SMS 메시지 전송 요청");
-        manager.getSmsWorker().insertMessage("1234567890", "This is a test SMS message.");
+        // 메시지 샘플 추가
+        messageRepository.saveMessage(new Message(1L, "010-1234-5678", "SMS 메시지입니다.", "SMS", "NEW"));
+        messageRepository.saveMessage(new Message(2L, "user@example.com", "이메일 메시지입니다.", "EMAIL", "NEW"));
+        messageRepository.saveMessage(new Message(3L, "user123", "앱 알림 메시지입니다.", "APP", "NEW"));
 
-        System.out.println("[Client] Email 메시지 전송 요청");
-        manager.getEmailWorker().insertMessage("user@example.com", "This is a test Email message.");
-
-        System.out.println("[Client] App Push 메시지 전송 요청");
-        manager.getAppPushWorker().insertMessage("device_token", "This is a test App Push message.");
-
-        // Sender를 통해 지속적으로 메시지를 감지하고 전송
-        System.out.println("[System] 통합 Sender가 loadQuery를 지속적으로 조회하여 메시지 전송을 처리합니다.");
-        manager.startContinuousProcessing();
+        // 메시지 처리 루프
+        while (true) {
+            messageWorker.processMessages();
+            Thread.sleep(5000); // 5초 대기
+        }
     }
 }
