@@ -7,8 +7,19 @@ public class Message {
 	 private String content;   // 메시지 내용
 	 private String messageType; // 메시지 유형 (APP, EMAIL, SMS)
 	 private String status;    // 처리 상태 (NEW, SENT)
+	 private int retryCount; // 재처리 count
 	
-	 public Message() {}
+
+
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
+	}
+
+	public Message() {}
 	
 	 public Message(Long id, String recipient, String content, String messageType, String status) {
 	     this.id = id;

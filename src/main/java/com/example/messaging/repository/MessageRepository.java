@@ -25,6 +25,22 @@ public class MessageRepository {
         }
         return newMessages;
     }
+    
+    public List<Message> failedMessagesRetryCount() {
+        List<Message> failedMessages = new ArrayList<>();
+
+        // FAILED 상태의 메시지를 조회하며 retry_count가 0보다 큰 경우에만 대상 추가
+        for (Message message : failedMessages) {
+            if ("FAILED".equals(message.getStatus()) && message.getRetryCount() > 0) {
+                failedMessages.add(message);
+
+                // 조회된 메시지 상태를 'PROCESSING'으로 업데이트
+                message.setStatus("PROCESSING");
+            }
+        }
+
+        return failedMessages;
+    }
 
     // 메시지 상태를 업데이트
     public void updateMessageStatus(Message message) {
